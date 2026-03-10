@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
       - name: web-container
-        #image: YOUR_DOCKERHUB_USERNAME/k8s-gitops-project:latest
-        image: nginx:alpine
+        #image: yogeshtaneja/k8s-gitops-project:22918265880
+        image: yogeshtaneja/k8s-gitops-project:22918265880
         ports:
         - containerPort: 80
 ---
