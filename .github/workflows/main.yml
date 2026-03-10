@@ -6,6 +6,11 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    
+    # Permission is needed to push the manifest change back to your repo
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -21,4 +26,19 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/k8s-gitops-project:latest
+          # We use the GitHub Run ID as the tag for unique versioning
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/k8s-gitops-project:${{ github.run_id }}
+
+      - name: Update Kubernetes Deployment YAML
+        run: |
+          # This replaces the old image tag with the new GitHub Run ID
+          sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/k8s-gitops-project:${{ github.run_id }}|g" k8s-deployment.yaml
+          
+          # Configure Git to commit the change
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # Commit and Push the updated YAML back to GitHub
+          git add k8s-deployment.yaml
+          git commit -m "chore: update image tag to ${{ github.run_id }} [skip ci]"
+          git push
